@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BOM Lookup</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; }
+    input, button { padding: 8px; margin: 5px 0; }
+    #result { margin-top: 20px; text-align: left; }
+    table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+    table, th, td { border: 1px solid #999; }
+    th, td { padding: 8px; text-align: left; }
+    h3 { margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <h2>Enter Product SKUs to Get BOM</h2>
+  <p>Separate multiple SKUs with commas (e.g., 12345,67890)</p>
+  <form id="bomForm">
+    <input type="text" id="sku" name="sku" placeholder="Enter Product SKU(s)" required>
+    <button type="submit">Submit</button>
+  </form>
+
+  <div id="result"></div>
+
+  <script>
+    const form = document.getElementById('bomForm');
+    const resultDiv = document.getElementById('result');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const skuInput = document.getElementById('sku').value.trim();
+      if (!skuInput) return;
+
+      // Split SKUs by comma, trim spaces
+      const skus = skuInput.split(',').map(s => s.trim()).filter(s => s.length);
+
+      resultDiv.innerHTML = "Loading...";
+
+      try {
+        const response = await fetch('https://YOUR_N8N_DOMAIN/webhook/bom-lookup?secret=YOUR_SECRET_TOKEN', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ skus })
+        });
+
+        if (!response.ok) throw new Error("Request failed");
+
+        const data = await response.json();
+        resultDiv.innerHTML = data.result; // Already HTML formatted from n8n
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      }
+    });
+  </script>
+</body>
+</html>
+
